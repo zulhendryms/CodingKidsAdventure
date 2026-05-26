@@ -1,0 +1,29 @@
+﻿@page "/home"
+@inject NavigationManager Nav
+
+<div style="padding: 20px; font-family: sans-serif; text-align: center;">
+    <button @onclick="GoBack" style="font-size: 20px; padding: 10px 20px; float: left;">◀️ Back</button>
+    <h1 style="color: #2196F3;">Choose a Game!</h1>
+
+    <div style="display: flex; justify-content: center; gap: 20px; margin-top: 50px;">
+        <!-- Game 1 Card -->
+        <div @onclick="GoToGame1" 
+             style="background: #FFF9C4; padding: 40px; border-radius: 15px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 200px;">
+            <h2 style="font-size: 50px; margin: 0;">🎒</h2>
+            <h3>Kode Sekolah</h3>
+            <p>⭐⭐⭐</p>
+        </div>
+
+        <!-- Locked Game Card -->
+        <div style="background: #EEEEEE; padding: 40px; border-radius: 15px; width: 200px; color: #999;">
+            <h2 style="font-size: 50px; margin: 0;">🔒</h2>
+            <h3>Robot Maze</h3>
+            <p>Locked</p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private void GoBack() => Nav.NavigateTo("/");
+    private void GoToGame1() => Nav.NavigateTo("/game1");
+}

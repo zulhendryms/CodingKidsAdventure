@@ -1,0 +1,169 @@
+@page "/game1"
+@inject NavigationManager Nav
+
+<div style="padding: 20px; font-family: sans-serif; text-align: center;">
+    <!-- Top Bar: Back Button and Score -->
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <button @onclick="GoBack" style="font-size: 20px; padding: 10px 20px; border-radius: 10px; cursor: pointer;">◀️ Back</button>
+        <h2 style="color: #FF9800; margin: 0; font-size: 30px;">SCORE: @score ⭐</h2>
+    </div>
+
+    <!-- The Code Key (Dictionary) -->
+    <div style="background-color: #FFF9C4; padding: 15px; border-radius: 15px; margin: 20px auto; max-width: 800px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+        <h3 style="color: #FF5722; margin-top: 0;">🔑 CODE KEY</h3>
+        <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; font-size: 24px; font-weight: bold;">
+            <span>📖=A</span>
+            <span>✏️=B</span>
+            <span>🎒=G</span>
+            <span>🖊️=I</span>
+            <span>🪑=K</span>
+            <span>⬛=P</span>
+            <span>🗜️=R</span>
+            <span>🖌️=U</span>
+        </div>
+    </div>
+
+    @if (!gameFinished)
+    {
+        <!-- The Clues (Images for the current word) -->
+        <div style="margin: 30px 0; font-size: 60px; display: flex; justify-content: center; gap: 20px;">
+            @foreach (var emoji in rounds[currentRound].Emojis)
+            {
+                <div>@emoji</div>
+            }
+        </div>
+
+        <!-- Drop Zones (Where the letters go) -->
+        <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 40px;">
+            @for (int i = 0; i < rounds[currentRound].TargetWord.Length; i++)
+            {
+                int index = i; // Local copy for the lambda expression
+                <div ondragover="event.preventDefault();" 
+                     @ondrop="() => HandleDrop(index)"
+                     style="width: 80px; height: 80px; border: 5px dashed #B0BEC5; border-radius: 15px; font-size: 45px; line-height: 80px; background-color: @(userAnswers[index] != '\0' ? "#C8E6C9" : "white")">
+                    @(userAnswers[index] == '\0' ? "_" : userAnswers[index])
+                </div>
+            }
+        </div>
+
+        <!-- Draggable Letters -->
+        <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; max-width: 600px; margin: 0 auto;">
+            @foreach (var letter in availableLetters)
+            {
+                <div draggable="true" 
+                     @ondragstart="() => HandleDragStart(letter)"
+                     style="width: 65px; height: 65px; background-color: #2196F3; color: white; font-size: 35px; line-height: 65px; border-radius: 50%; cursor: grab; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+                    @letter
+                </div>
+            }
+        </div>
+        
+        <!-- Next Button (Only shows when they get the word right) -->
+        @if(isWinnerThisRound)
+        {
+            <div style="margin-top: 30px;">
+                <h2 style="color: #4CAF50;">🎉 GREAT JOB! 🎉</h2>
+                <button @onclick="NextRound" style="font-size: 30px; padding: 15px 40px; background-color: #FFC107; border: none; border-radius: 15px; cursor: pointer;">
+                    Next Word ➡️
+                </button>
+            </div>
+        }
+    }
+    else
+    {
+        <!-- Game Over Screen -->
+        <div style="margin-top: 50px;">
+            <h1 style="font-size: 60px; color: #4CAF50;">🏆 YOU WIN! 🏆</h1>
+            <p style="font-size: 30px;">You collected @score stars!</p>
+            <button @onclick="GoBack" style="font-size: 30px; padding: 15px 40px; background-color: #2196F3; color: white; border: none; border-radius: 15px; cursor: pointer; margin-top: 20px;">
+                Play Again 🔄
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    private void GoBack() => Nav.NavigateTo("/home");
+
+    // Game Data Models
+    public class GameRound
+    {
+        public string TargetWord { get; set; } = "";
+        public string[] Emojis { get; set; } = new string[0];
+    }
+
+    // Our 3 Puzzles based on the worksheet!
+    private List<GameRound> rounds = new List<GameRound>
+    {
+        new GameRound { TargetWord = "RAPI", Emojis = new[] {"🗜️", "📖", "⬛", "🖊️"} },
+        new GameRound { TargetWord = "BUKU", Emojis = new[] {"✏️", "🖌️", "🪑", "🖌️"} },
+        new GameRound { TargetWord = "GURU", Emojis = new[] {"🎒", "🖌️", "🗜️", "🖌️"} }
+    };
+
+    // Game State Variables
+    private int currentRound = 0;
+    private int score = 0;
+    private char[] userAnswers = new char[4];
+    private char draggedLetter;
+    private bool isWinnerThisRound = false;
+    private bool gameFinished = false;
+
+    // The keyboard for toddlers to choose from
+    private List<char> availableLetters = new List<char> { 'A', 'B', 'G', 'I', 'K', 'P', 'R', 'U' };
+
+    protected override void OnInitialized()
+    {
+        ResetDropZones();
+    }
+
+    private void HandleDragStart(char letter)
+    {
+        draggedLetter = letter;
+    }
+
+    private void HandleDrop(int index)
+    {
+        // Only allow dropping if they haven't won the round yet
+        if (isWinnerThisRound) return;
+
+        // Check if the dropped letter matches the required letter for this slot
+        if (draggedLetter == rounds[currentRound].TargetWord[index])
+        {
+            userAnswers[index] = draggedLetter;
+            CheckWinCondition();
+        }
+    }
+
+    private void CheckWinCondition()
+    {
+        string currentAnswer = new string(userAnswers);
+        if (currentAnswer == rounds[currentRound].TargetWord)
+        {
+            isWinnerThisRound = true;
+            score += 10; // Give them 10 points/stars per word!
+        }
+    }
+
+    private void NextRound()
+    {
+        currentRound++;
+        if (currentRound >= rounds.Count)
+        {
+            gameFinished = true; // They finished all the words!
+        }
+        else
+        {
+            isWinnerThisRound = false;
+            ResetDropZones();
+        }
+    }
+
+    private void ResetDropZones()
+    {
+        userAnswers = new char[rounds[currentRound].TargetWord.Length];
+        for (int i = 0; i < userAnswers.Length; i++)
+        {
+            userAnswers[i] = '\0'; // Empty characters
+        }
+    }
+}
