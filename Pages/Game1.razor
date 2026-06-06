@@ -1,17 +1,23 @@
 @page "/game1"
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
-<div style="padding: 20px; font-family: sans-serif; text-align: center;">
-    <!-- Top Bar: Back Button and Score -->
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <button @onclick="GoBack" style="font-size: 20px; padding: 10px 20px; border-radius: 10px; cursor: pointer;">◀️ Back</button>
-        <h2 style="color: #FF9800; margin: 0; font-size: 30px;">SCORE: @score ⭐</h2>
+<div class="game-page">
+    <div class="game-header">
+        <button class="back-button" @onclick="GoBack">◀️ Back</button>
+        <div class="score-box">⭐ Score: @score</div>
     </div>
 
-    <!-- The Code Key (Dictionary) -->
-    <div style="background-color: #FFF9C4; padding: 15px; border-radius: 15px; margin: 20px auto; max-width: 800px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-        <h3 style="color: #FF5722; margin-top: 0;">🔑 CODE KEY</h3>
-        <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; font-size: 24px; font-weight: bold;">
+    <div class="status-bar">
+        <div class="timer">⏱️ @timeRemaining s left</div>
+        <div class="progress-bar" aria-label="Round progress">
+            <div class="progress-fill" style="width:@ProgressPercent%"></div>
+        </div>
+    </div>
+
+    <div class="card code-key">
+        <h3>🔑 CODE KEY</h3>
+        <div class="code-grid">
             <span>📖=A</span>
             <span>✏️=B</span>
             <span>🎒=G</span>
@@ -25,145 +31,740 @@
 
     @if (!gameFinished)
     {
-        <!-- The Clues (Images for the current word) -->
-        <div style="margin: 30px 0; font-size: 60px; display: flex; justify-content: center; gap: 20px;">
-            @foreach (var emoji in rounds[currentRound].Emojis)
+        <div class="clue-row">
+            @foreach (var emoji in CurrentRound.Emojis)
             {
-                <div>@emoji</div>
+                <div class="clue-item">@emoji</div>
             }
         </div>
 
-        <!-- Drop Zones (Where the letters go) -->
-        <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 40px;">
-            @for (int i = 0; i < rounds[currentRound].TargetWord.Length; i++)
+        <div class="drop-zone-row">
+            @for (int i = 0; i < CurrentRound.TargetWord.Length; i++)
             {
-                int index = i; // Local copy for the lambda expression
-                <div ondragover="event.preventDefault();" 
-                     @ondrop="() => HandleDrop(index)"
-                     style="width: 80px; height: 80px; border: 5px dashed #B0BEC5; border-radius: 15px; font-size: 45px; line-height: 80px; background-color: @(userAnswers[index] != '\0' ? "#C8E6C9" : "white")">
+                int index = i;
+                <button class="@($"drop-slot {(IsNextFillSlot(index) ? "highlight" : "")}{(userAnswers[index] != '\0' ? " filled" : "")}")"
+                        @ondragover:preventDefault
+                        @ondrop="@(e => HandleDrop(index))"
+                        @onclick="@( () => HandleDrop(index) )">
                     @(userAnswers[index] == '\0' ? "_" : userAnswers[index])
-                </div>
+                </button>
             }
         </div>
 
-        <!-- Draggable Letters -->
-        <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; max-width: 600px; margin: 0 auto;">
+        @if (selectedLetter != '\0')
+        {
+            <div class="selected-bubble">Selected: <strong>@selectedLetter</strong></div>
+        }
+
+        <div class="control-row">
+            <button class="action-button" @onclick="Undo" disabled="@(placementHistory.Count == 0)">↩️ Undo</button>
+            <button class="action-button hint-button" @onclick="UseHint" disabled="@(!CanUseHint)">💡 Hint (@hintCount/2)</button>
+        </div>
+
+        <div class="letter-grid">
             @foreach (var letter in availableLetters)
             {
-                <div draggable="true" 
-                     @ondragstart="() => HandleDragStart(letter)"
-                     style="width: 65px; height: 65px; background-color: #2196F3; color: white; font-size: 35px; line-height: 65px; border-radius: 50%; cursor: grab; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+                var remaining = RemainingLetterCount(letter);
+                <button class="letter-tile @(remaining == 0 ? "used" : "") @(selectedLetter == letter ? "active" : "")"
+                        disabled="@(remaining == 0)"
+                        draggable="true"
+                        @ondragstart="() => HandleDragStart(letter)"
+                        @onclick="() => SelectLetter(letter)">
                     @letter
-                </div>
+                    @if (remaining > 1)
+                    {
+                        <span class="letter-count">x@remaining</span>
+                    }
+                </button>
             }
         </div>
-        
-        <!-- Next Button (Only shows when they get the word right) -->
-        @if(isWinnerThisRound)
+
+        <div class="message-row">
+            <span class="message-text">@message</span>
+        </div>
+
+        @if (isWinnerThisRound)
         {
-            <div style="margin-top: 30px;">
-                <h2 style="color: #4CAF50;">🎉 GREAT JOB! 🎉</h2>
-                <button @onclick="NextRound" style="font-size: 30px; padding: 15px 40px; background-color: #FFC107; border: none; border-radius: 15px; cursor: pointer;">
-                    Next Word ➡️
-                </button>
+            <div class="celebrate-card">
+                <h2>🎉 GREAT JOB! 🎉</h2>
+                <p>Word complete: <strong>@CurrentRound.TargetWord</strong></p>
+                <button class="next-button" @onclick="NextRound">Next Word ➡️</button>
+                @if (autoNextSecondsRemaining > 0)
+                {
+                    <p class="auto-next-text">Auto advancing in @autoNextSecondsRemaining second@(autoNextSecondsRemaining == 1 ? "" : "s")...</p>
+                }
             </div>
         }
     }
     else
     {
-        <!-- Game Over Screen -->
-        <div style="margin-top: 50px;">
-            <h1 style="font-size: 60px; color: #4CAF50;">🏆 YOU WIN! 🏆</h1>
-            <p style="font-size: 30px;">You collected @score stars!</p>
-            <button @onclick="GoBack" style="font-size: 30px; padding: 15px 40px; background-color: #2196F3; color: white; border: none; border-radius: 15px; cursor: pointer; margin-top: 20px;">
-                Play Again 🔄
-            </button>
+        <div class="game-over-card">
+            <h1>🏆 YOU WIN! 🏆</h1>
+            <p>You collected <strong>@score</strong> stars!</p>
+            <button class="next-button" @onclick="RestartGame">Play Again 🔄</button>
+        </div>
+    }
+
+    @if (showConfetti)
+    {
+        <div class="confetti-overlay">
+            @foreach (var piece in confettiPieces)
+            {
+                <span class="confetti-piece">@piece</span>
+            }
         </div>
     }
 </div>
 
+<style>
+    .game-page {
+        padding: 20px;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        color: #2c3e50;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .game-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+
+    .back-button,
+    .action-button,
+    .next-button,
+    .hint-button {
+        border: none;
+        border-radius: 18px;
+        padding: 14px 22px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    .back-button,
+    .next-button,
+    .action-button,
+    .hint-button {
+        background: #2196f3;
+        color: white;
+    }
+
+    .back-button:hover,
+    .action-button:hover,
+    .next-button:hover,
+    .hint-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 18px rgba(33, 150, 243, 0.2);
+    }
+
+    .back-button:disabled,
+    .action-button:disabled,
+    .hint-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .score-box {
+        background: #fff3e0;
+        padding: 12px 18px;
+        border-radius: 18px;
+        font-weight: 700;
+    }
+
+    .status-bar {
+        display: grid;
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .timer {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 16px;
+        background: #eceff1;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4caf50, #2196f3);
+        transition: width 0.3s ease;
+    }
+
+    .card {
+        background: white;
+        border-radius: 22px;
+        padding: 18px;
+        box-shadow: 0 12px 35px rgba(44, 62, 80, 0.08);
+        margin-bottom: 20px;
+    }
+
+    .code-key h3 {
+        margin: 0 0 12px;
+        font-size: 1.2rem;
+        color: #ff5722;
+    }
+
+    .code-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(90px, 1fr));
+        gap: 10px;
+        justify-items: center;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .clue-row {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        font-size: 3rem;
+        margin-bottom: 24px;
+    }
+
+    .drop-zone-row {
+        display: flex;
+        justify-content: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+
+    .drop-slot {
+        width: 76px;
+        height: 76px;
+        border: 4px dashed #b0bec5;
+        border-radius: 18px;
+        background: white;
+        font-size: 2rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .drop-slot:hover {
+        transform: translateY(-1px);
+    }
+
+    .drop-slot.highlight {
+        background: #e8f5e9;
+        border-color: #66bb6a;
+    }
+
+    .drop-slot.filled {
+        background: #c8e6c9;
+        border-color: #4caf50;
+    }
+
+    .selected-bubble {
+        display: inline-block;
+        background: #ffecb3;
+        padding: 12px 18px;
+        border-radius: 999px;
+        font-size: 1.1rem;
+        margin-bottom: 18px;
+        box-shadow: 0 8px 18px rgba(255, 235, 59, 0.18);
+    }
+
+    .control-row {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+
+    .letter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+        gap: 12px;
+        justify-items: center;
+        margin-bottom: 16px;
+    }
+
+    .letter-tile {
+        position: relative;
+        min-width: 72px;
+        min-height: 72px;
+        border-radius: 50%;
+        background: #2196f3;
+        color: white;
+        font-size: 1.5rem;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 18px rgba(33, 150, 243, 0.22);
+        transition: transform 0.16s ease, opacity 0.2s ease, background 0.2s ease;
+    }
+
+    .letter-tile:hover:not(:disabled) {
+        transform: translateY(-2px);
+    }
+
+    .letter-tile.used,
+    .letter-tile:disabled {
+        opacity: 0.45;
+        background: #90a4ae;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    .letter-count {
+        position: absolute;
+        bottom: 8px;
+        right: 10px;
+        font-size: 0.8rem;
+        opacity: 0.9;
+    }
+
+    .message-row {
+        min-height: 36px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #455a64;
+        text-align: center;
+        margin-bottom: 14px;
+    }
+
+    .celebrate-card,
+    .game-over-card {
+        background: #fff8e1;
+        border-radius: 24px;
+        padding: 22px;
+        box-shadow: 0 12px 28px rgba(255, 202, 40, 0.16);
+        text-align: center;
+    }
+
+    .celebrate-card h2,
+    .game-over-card h1 {
+        margin: 0 0 10px;
+    }
+
+    .auto-next-text {
+        margin-top: 12px;
+        font-size: 1rem;
+        color: #455a64;
+    }
+
+    .confetti-overlay {
+        pointer-events: none;
+        position: fixed;
+        inset: 0;
+        z-index: 999;
+        overflow: hidden;
+    }
+
+    .confetti-piece {
+        position: absolute;
+        font-size: 1.5rem;
+        animation: floatConfetti 1.8s ease-in forwards;
+    }
+
+    .confetti-piece:nth-child(1) { left: 10%; animation-delay: 0.1s; }
+    .confetti-piece:nth-child(2) { left: 22%; animation-delay: 0.2s; }
+    .confetti-piece:nth-child(3) { left: 35%; animation-delay: 0.15s; }
+    .confetti-piece:nth-child(4) { left: 48%; animation-delay: 0.05s; }
+    .confetti-piece:nth-child(5) { left: 61%; animation-delay: 0.18s; }
+    .confetti-piece:nth-child(6) { left: 74%; animation-delay: 0.12s; }
+    .confetti-piece:nth-child(7) { left: 87%; animation-delay: 0.08s; }
+    .confetti-piece:nth-child(8) { left: 16%; animation-delay: 0.22s; }
+    .confetti-piece:nth-child(9) { left: 29%; animation-delay: 0.06s; }
+    .confetti-piece:nth-child(10){ left: 42%; animation-delay: 0.14s; }
+    .confetti-piece:nth-child(11){ left: 55%; animation-delay: 0.1s; }
+    .confetti-piece:nth-child(12){ left: 68%; animation-delay: 0.19s; }
+    .confetti-piece:nth-child(13){ left: 81%; animation-delay: 0.13s; }
+    .confetti-piece:nth-child(14){ left: 94%; animation-delay: 0.07s; }
+
+    @@keyframes floatConfetti {
+        0% { transform: translateY(-30px) rotate(0deg); opacity: 0; }
+        50% { opacity: 1; }
+        100% { transform: translateY(120vh) rotate(360deg); opacity: 0; }
+    }
+
+    @@media (max-width: 900px) {
+        .status-bar { grid-template-columns: 1fr auto; align-items: center; }
+        .code-grid { grid-template-columns: repeat(2, minmax(80px, 1fr)); }
+        .clue-row { font-size: 2.4rem; }
+        .drop-slot { width: 72px; height: 72px; }
+    }
+
+    @@media (max-width: 700px) {
+        .game-page { padding: 16px; }
+        .game-header { flex-direction: column; align-items: stretch; }
+        .back-button,
+        .score-box { width: 100%; text-align: center; }
+        .drop-slot { width: 66px; height: 66px; font-size: 1.7rem; }
+        .letter-tile { min-width: 60px; min-height: 60px; font-size: 1.25rem; }
+        .letter-grid { grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); }
+        .message-row { min-height: auto; font-size: 0.95rem; }
+    }
+
+    @@media (max-width: 520px) {
+        .control-row { flex-direction: column; gap: 10px; }
+        .action-button,
+        .hint-button,
+        .next-button,
+        .back-button { width: 100%; }
+        .clue-row { font-size: 2rem; gap: 10px; }
+        .status-bar { gap: 10px; }
+        .drop-slot { width: 56px; height: 56px; font-size: 1.4rem; }
+        .letter-tile { min-width: 52px; min-height: 52px; font-size: 1.1rem; }
+    }
+</style>
+
 @code {
     private void GoBack() => Nav.NavigateTo("/home");
 
-    // Game Data Models
     public class GameRound
     {
         public string TargetWord { get; set; } = "";
         public string[] Emojis { get; set; } = new string[0];
+        public int Difficulty { get; set; }
     }
 
-    // Our 3 Puzzles based on the worksheet!
-    private List<GameRound> rounds = new List<GameRound>
+    private readonly List<GameRound> allRounds = new()
     {
-        new GameRound { TargetWord = "RAPI", Emojis = new[] {"🗜️", "📖", "⬛", "🖊️"} },
-        new GameRound { TargetWord = "BUKU", Emojis = new[] {"✏️", "🖌️", "🪑", "🖌️"} },
-        new GameRound { TargetWord = "GURU", Emojis = new[] {"🎒", "🖌️", "🗜️", "🖌️"} }
+        new GameRound { TargetWord = "RAPI", Emojis = new[] { "🗜️", "📖", "⬛", "🖊️" }, Difficulty = 1 },
+        new GameRound { TargetWord = "BUKU", Emojis = new[] { "✏️", "🖌️", "🪑", "🖌️" }, Difficulty = 1 },
+        new GameRound { TargetWord = "GURU", Emojis = new[] { "🎒", "🖌️", "🗜️", "🖌️" }, Difficulty = 2 },
+        new GameRound { TargetWord = "PURA", Emojis = new[] { "⬛", "🖌️", "🗜️", "📖" }, Difficulty = 2 },
+        new GameRound { TargetWord = "BARI", Emojis = new[] { "✏️", "📖", "🗜️", "🖊️" }, Difficulty = 3 }
     };
 
-    // Game State Variables
-    private int currentRound = 0;
+    private List<GameRound> roundQueue = new();
+    private int currentRoundIndex = 0;
     private int score = 0;
-    private char[] userAnswers = new char[4];
-    private char draggedLetter;
+    private char[] userAnswers = Array.Empty<char>();
+    private char draggedLetter = '\0';
+    private char selectedLetter = '\0';
     private bool isWinnerThisRound = false;
     private bool gameFinished = false;
+    private int timeRemaining;
+    private int roundDuration = 45;
+    private int hintCount = 0;
+    private bool showConfetti = false;
+    private string message = "Tap a letter to begin!";
+    private readonly char[] availableLetters = new[] { 'A', 'B', 'G', 'I', 'K', 'P', 'R', 'U' };
+    private readonly Dictionary<char, int> letterUsageCounts = new();
+    private readonly Stack<int> placementHistory = new();
+    private Timer? roundTimer;
+    private Timer? autoNextTimer;
+    private int autoNextSecondsRemaining = 0;
+    private readonly string[] confettiPieces = new[] { "🎉", "✨", "🎊", "🌟", "💫", "🎈", "🎉", "✨", "🎊", "🌟", "💥", "🎈", "✨", "🎉" };
 
-    // The keyboard for toddlers to choose from
-    private List<char> availableLetters = new List<char> { 'A', 'B', 'G', 'I', 'K', 'P', 'R', 'U' };
+    private GameRound CurrentRound => roundQueue[currentRoundIndex];
+
+    private int ProgressPercent => (int)Math.Ceiling(100.0 * timeRemaining / roundDuration);
+
+    private bool CanUseHint => !isWinnerThisRound && timeRemaining > 0 && hintCount < 2 && userAnswers.Any(c => c == '\0');
+
+    private bool IsNextFillSlot(int index)
+        => !isWinnerThisRound && !gameFinished && index == Array.FindIndex(userAnswers, c => c == '\0');
 
     protected override void OnInitialized()
     {
+        InitializeRounds();
+        StartRound();
+    }
+
+    private void InitializeRounds()
+    {
+        roundQueue = allRounds
+            .OrderBy(r => r.Difficulty)
+            .ThenBy(r => r.TargetWord)
+            .ToList();
+    }
+
+    private async Task PlaySound(string soundType)
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("gameSounds.play", soundType);
+        }
+        catch
+        {
+            // Ignore audio failures in older browsers.
+        }
+    }
+
+    private void StartRound()
+    {
+        isWinnerThisRound = false;
+        selectedLetter = '\0';
+        draggedLetter = '\0';
+        hintCount = 0;
+        message = "Tap a letter to begin!";
         ResetDropZones();
+        timeRemaining = roundDuration;
+
+        autoNextTimer?.Dispose();
+        autoNextSecondsRemaining = 0;
+        roundTimer?.Dispose();
+        roundTimer = new Timer(_ => TickTimer(), null, 1000, 1000);
     }
 
-    private void HandleDragStart(char letter)
+    private void TickTimer()
     {
-        draggedLetter = letter;
-    }
-
-    private void HandleDrop(int index)
-    {
-        // Only allow dropping if they haven't won the round yet
-        if (isWinnerThisRound) return;
-
-        // Check if the dropped letter matches the required letter for this slot
-        if (draggedLetter == rounds[currentRound].TargetWord[index])
+        InvokeAsync(() =>
         {
-            userAnswers[index] = draggedLetter;
-            CheckWinCondition();
-        }
-    }
-
-    private void CheckWinCondition()
-    {
-        string currentAnswer = new string(userAnswers);
-        if (currentAnswer == rounds[currentRound].TargetWord)
-        {
-            isWinnerThisRound = true;
-            score += 10; // Give them 10 points/stars per word!
-        }
-    }
-
-    private void NextRound()
-    {
-        currentRound++;
-        if (currentRound >= rounds.Count)
-        {
-            gameFinished = true; // They finished all the words!
-        }
-        else
-        {
-            isWinnerThisRound = false;
-            ResetDropZones();
-        }
+            timeRemaining = Math.Max(0, timeRemaining - 1);
+            if (timeRemaining <= 0 && !isWinnerThisRound)
+            {
+                message = "Time's up! Tap Next Word to continue.";
+                isWinnerThisRound = true;
+                _ = PlaySound("wrong");
+            }
+            StateHasChanged();
+        });
     }
 
     private void ResetDropZones()
     {
-        userAnswers = new char[rounds[currentRound].TargetWord.Length];
+        userAnswers = new char[CurrentRound.TargetWord.Length];
         for (int i = 0; i < userAnswers.Length; i++)
         {
-            userAnswers[i] = '\0'; // Empty characters
+            userAnswers[i] = '\0';
         }
+
+        letterUsageCounts.Clear();
+        placementHistory.Clear();
+    }
+
+    private void HandleDragStart(char letter)
+    {
+        if (RemainingLetterCount(letter) == 0)
+        {
+            return;
+        }
+        draggedLetter = letter;
+        selectedLetter = letter;
+    }
+
+    private void SelectLetter(char letter)
+    {
+        if (RemainingLetterCount(letter) == 0 || isWinnerThisRound)
+        {
+            return;
+        }
+
+        selectedLetter = letter;
+        PlaceInNextEmptySlot(letter);
+    }
+
+    private void PlaceInNextEmptySlot(char letter)
+    {
+        var nextEmptyIndex = Array.FindIndex(userAnswers, c => c == '\0');
+        if (nextEmptyIndex < 0)
+        {
+            message = "All slots are filled!";
+            return;
+        }
+
+        if (letter == CurrentRound.TargetWord[nextEmptyIndex])
+        {
+            PlaceLetter(letter, nextEmptyIndex);
+            message = "Great choice!";
+        }
+        else
+        {
+            message = "Try another letter or drop the right one in the empty slot.";
+            _ = PlaySound("wrong");
+        }
+    }
+
+    private void HandleDrop(int index)
+    {
+        if (isWinnerThisRound) return;
+
+        var letterToPlace = selectedLetter != '\0' ? selectedLetter : draggedLetter;
+        if (letterToPlace == '\0')
+        {
+            message = "Pick a letter first.";
+            return;
+        }
+
+        if (letterToPlace == CurrentRound.TargetWord[index])
+        {
+            PlaceLetter(letterToPlace, index);
+            message = "Nice!";
+        }
+        else
+        {
+            message = "That letter doesn't belong here.";
+            _ = PlaySound("wrong");
+        }
+    }
+
+    private void PlaceLetter(char letter, int index)
+    {
+        if (userAnswers[index] != '\0')
+        {
+            return;
+        }
+
+        userAnswers[index] = letter;
+        placementHistory.Push(index);
+        IncrementLetterUsage(letter);
+        selectedLetter = '\0';
+        draggedLetter = '\0';
+        _ = PlaySound("correct");
+        CheckWinCondition();
+    }
+
+    private void IncrementLetterUsage(char letter)
+    {
+        letterUsageCounts[letter] = letterUsageCounts.TryGetValue(letter, out var count) ? count + 1 : 1;
+    }
+
+    private void DecrementLetterUsage(char letter)
+    {
+        if (!letterUsageCounts.TryGetValue(letter, out var count))
+        {
+            return;
+        }
+        if (count <= 1)
+        {
+            letterUsageCounts.Remove(letter);
+            return;
+        }
+        letterUsageCounts[letter] = count - 1;
+    }
+
+    private int PlacedCount(char letter)
+        => letterUsageCounts.TryGetValue(letter, out var count) ? count : 0;
+
+    private int RequiredCount(char letter)
+        => CurrentRound.TargetWord.Count(c => c == letter);
+
+    private int RemainingLetterCount(char letter)
+        => Math.Max(0, RequiredCount(letter) - PlacedCount(letter));
+
+    private void CheckWinCondition()
+    {
+        var currentAnswer = new string(userAnswers);
+        if (currentAnswer == CurrentRound.TargetWord)
+        {
+            isWinnerThisRound = true;
+            score += 10;
+            message = "You solved it!";
+            _ = PlaySound("win");
+            DisplayConfetti();
+            ScheduleAutoNextRound();
+        }
+    }
+
+    private void ScheduleAutoNextRound()
+    {
+        autoNextTimer?.Dispose();
+        autoNextSecondsRemaining = 3;
+
+        autoNextTimer = new Timer(_ =>
+        {
+            InvokeAsync(() =>
+            {
+                if (!isWinnerThisRound || gameFinished)
+                {
+                    autoNextTimer?.Dispose();
+                    return;
+                }
+
+                autoNextSecondsRemaining--;
+
+                if (autoNextSecondsRemaining <= 0)
+                {
+                    autoNextTimer?.Dispose();
+                    NextRound();
+                }
+                StateHasChanged();
+            });
+        }, null, 1000, 1000);
+    }
+
+    private async void DisplayConfetti()
+    {
+        showConfetti = true;
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(2000);
+        showConfetti = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void Undo()
+    {
+        if (placementHistory.Count == 0)
+        {
+            message = "Nothing to undo yet.";
+            return;
+        }
+
+        var index = placementHistory.Pop();
+        var removedLetter = userAnswers[index];
+        userAnswers[index] = '\0';
+        DecrementLetterUsage(removedLetter);
+        selectedLetter = '\0';
+        message = "Undo successful.";
+    }
+
+    private void UseHint()
+    {
+        if (!CanUseHint)
+        {
+            return;
+        }
+
+        var nextEmptyIndex = Array.FindIndex(userAnswers, c => c == '\0');
+        if (nextEmptyIndex < 0)
+        {
+            return;
+        }
+
+        var correctLetter = CurrentRound.TargetWord[nextEmptyIndex];
+        PlaceLetter(correctLetter, nextEmptyIndex);
+        hintCount++;
+        message = "Hint used! One letter is filled in.";
+        _ = PlaySound("hint");
+    }
+
+    private void NextRound()
+    {
+        autoNextTimer?.Dispose();
+        autoNextSecondsRemaining = 0;
+
+        if (currentRoundIndex + 1 >= roundQueue.Count)
+        {
+            gameFinished = true;
+            roundTimer?.Dispose();
+            return;
+        }
+
+        currentRoundIndex++;
+        StartRound();
+    }
+
+    private void RestartGame()
+    {
+        score = 0;
+        currentRoundIndex = 0;
+        gameFinished = false;
+        InitializeRounds();
+        StartRound();
     }
 }
