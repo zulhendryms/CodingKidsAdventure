@@ -199,6 +199,8 @@
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/bin/Debug/net9.0/wwwroot/_framework/icudt_CJK.tjcz0u77k5.dat
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/bin/Debug/net9.0/wwwroot/_framework/icudt_EFIGS.tptq2av103.dat
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/bin/Debug/net9.0/wwwroot/_framework/icudt_no_CJK.lfu7j35m59.dat
+/Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/bin/Debug/net9.0/wwwroot/_framework/CodingKidsAdventure.6sxi95smol.wasm
+/Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/bin/Debug/net9.0/wwwroot/_framework/CodingKidsAdventure.tjp3vnuhf3.pdb
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/bin/Debug/net9.0/wwwroot/_framework/blazor.boot.json
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/bin/Debug/net9.0/wwwroot/_framework/blazor.webassembly.js.gz
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/bin/Debug/net9.0/wwwroot/_framework/Microsoft.AspNetCore.Authorization.tnyc7xpluy.wasm.gz
@@ -401,6 +403,8 @@
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/bin/Debug/net9.0/wwwroot/_framework/icudt_CJK.tjcz0u77k5.dat.gz
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/bin/Debug/net9.0/wwwroot/_framework/icudt_EFIGS.tptq2av103.dat.gz
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/bin/Debug/net9.0/wwwroot/_framework/icudt_no_CJK.lfu7j35m59.dat.gz
+/Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/bin/Debug/net9.0/wwwroot/_framework/CodingKidsAdventure.6sxi95smol.wasm.gz
+/Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/bin/Debug/net9.0/wwwroot/_framework/CodingKidsAdventure.tjp3vnuhf3.pdb.gz
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/bin/Debug/net9.0/wwwroot/_framework/blazor.boot.json.gz
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/bin/Debug/net9.0/CodingKidsAdventure.staticwebassets.runtime.json
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/bin/Debug/net9.0/CodingKidsAdventure.staticwebassets.endpoints.json
@@ -613,6 +617,7 @@
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/CodingKidsAdventure.AssemblyInfo.cs
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/CodingKidsAdventure.csproj.CoreCompileInputs.cache
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/CodingKidsAdventure.MvcApplicationPartsAssemblyInfo.cache
+/Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/CodingKidsAdventure.sourcelink.json
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/webcil/Microsoft.AspNetCore.Authorization.wasm
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/webcil/Microsoft.AspNetCore.Components.wasm
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/webcil/Microsoft.AspNetCore.Components.Forms.wasm
@@ -815,7 +820,7 @@
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/blazor.build.boot-extension.json
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/blazor.boot.json
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/compressed/05wepfp9pm-8rbvw3on5j.gz
-/Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/compressed/vnx82d0rdc-g5ke7tsh6g.gz
+/Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/compressed/vnx82d0rdc-bae6y7gnxv.gz
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/compressed/5n76o0p61p-bqjiyaj88i.gz
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/compressed/remw255q06-c2jlpeoesf.gz
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/compressed/8a46fk7xs0-erw9l3u2r3.gz
@@ -1064,6 +1069,9 @@
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/compressed/ou6ntg3fpk-tjcz0u77k5.gz
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/compressed/6ubg7d95wl-tptq2av103.gz
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/compressed/bwncet230w-lfu7j35m59.gz
+/Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/compressed/swvmlv5y9x-6sxi95smol.gz
+/Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/compressed/pwpcuekvmr-tjp3vnuhf3.gz
+/Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/compressed/fyxrwitokn-vkaxzo5h4j.gz
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/staticwebassets.build.json
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/staticwebassets.build.json.cache
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/staticwebassets.development.json
@@ -1073,10 +1081,3 @@
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/refint/CodingKidsAdventure.dll
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/CodingKidsAdventure.pdb
 /Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/ref/CodingKidsAdventure.dll
-/Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/bin/Debug/net9.0/wwwroot/_framework/CodingKidsAdventure.wuineued6u.wasm
-/Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/bin/Debug/net9.0/wwwroot/_framework/CodingKidsAdventure.fdq43g1krd.pdb
-/Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/bin/Debug/net9.0/wwwroot/_framework/CodingKidsAdventure.wuineued6u.wasm.gz
-/Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/bin/Debug/net9.0/wwwroot/_framework/CodingKidsAdventure.fdq43g1krd.pdb.gz
-/Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/compressed/swvmlv5y9x-wuineued6u.gz
-/Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/compressed/pwpcuekvmr-fdq43g1krd.gz
-/Users/travelacetours/Documents/zul project/learnCodingGame/CodingKidsAdventure/obj/Debug/net9.0/compressed/fyxrwitokn-0jio48nfdf.gz
