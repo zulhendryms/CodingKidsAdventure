@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "CodingKidsAdventure",
   "resources": {
-    "hash": "sha256-TMfOxpM2ONbwcJFLoJlRrxrhOaUd77Do4mhyE+LYBTY=",
+    "hash": "sha256-drzmUJp3AsZqiewNbLNPu02XC+kcdxqNWM2GLAP44EM=",
     "fingerprinting": {
       "Microsoft.AspNetCore.Authorization.tnyc7xpluy.wasm": "Microsoft.AspNetCore.Authorization.wasm",
       "Microsoft.AspNetCore.Components.t32damlu4o.wasm": "Microsoft.AspNetCore.Components.wasm",
@@ -201,8 +201,8 @@
       "icudt_CJK.tjcz0u77k5.dat": "icudt_CJK.dat",
       "icudt_EFIGS.tptq2av103.dat": "icudt_EFIGS.dat",
       "icudt_no_CJK.lfu7j35m59.dat": "icudt_no_CJK.dat",
-      "CodingKidsAdventure.6sxi95smol.wasm": "CodingKidsAdventure.wasm",
-      "CodingKidsAdventure.tjp3vnuhf3.pdb": "CodingKidsAdventure.pdb"
+      "CodingKidsAdventure.rfuuk0zzr2.wasm": "CodingKidsAdventure.wasm",
+      "CodingKidsAdventure.6lah3hcr15.pdb": "CodingKidsAdventure.pdb"
     },
     "jsModuleNative": {
       "dotnet.native.50iqa8w3ys.js": "sha256-pQdXuxfVeqYHOwd5HUM2ERd7OnXirj9JTF37b6OdTAc="
@@ -412,10 +412,10 @@
       "WindowsBase.361km0836k.wasm": "sha256-FacUCEIJYTnbOWgX/R9QP2QnurqRZwRIkDAH0N9z69s=",
       "mscorlib.qiu3j3msqk.wasm": "sha256-QvztpxTOEw4aMIl7zP3QtsPLNv/IWaK5wq22J4ReGrA=",
       "netstandard.lp03u0xxi4.wasm": "sha256-WVQsxULiAiEbyXLKolS7txnWVT82SsvsuMe4jJ+SqqI=",
-      "CodingKidsAdventure.6sxi95smol.wasm": "sha256-hphUhafFUN0UYRMBuuFcq5aKkfvdmp+snWBgoaVt3xk="
+      "CodingKidsAdventure.rfuuk0zzr2.wasm": "sha256-aYaUujSpr5jj2P2IQiWZX/UVCvDLjHkZhzAklDWUVPA="
     },
     "pdb": {
-      "CodingKidsAdventure.tjp3vnuhf3.pdb": "sha256-5wAdIrXOXOjvcf+12biBlrgcssVBifuGqr4PN/t9tbQ="
+      "CodingKidsAdventure.6lah3hcr15.pdb": "sha256-Jmn3sCFKOZ3s4HlkQgiQNqetpDQhskjmM/S4VtF0M98="
     }
   },
   "cacheBootResources": true,
